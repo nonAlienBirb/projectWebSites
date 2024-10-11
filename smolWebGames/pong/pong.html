@@ -1,1 +1,51 @@
-.
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>pong</title>
+    <link rel="stylesheet" href="pong.css">
+</head>
+  <style>
+    html,body{
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+#screen{
+    background-color: black;
+    position: relative;
+    height: 90%;
+    width: 100%;
+}
+
+.p1, .p2{
+    background-color: #fff;
+    position: absolute;
+    width: 10px;
+    height: 10%;
+    transform: translate(-50%,-50%);
+    transition: transform 0.3 ease;
+}
+
+.b {
+    background-color: #fff;
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    transform: translate(-50%,-50%);
+    transition: transform 0.3 ease;
+}
+  </style>
+<body>
+    <div id="screen">
+        <div class="p1"></div>
+        <div class="p2"></div>
+        <div class="b"></div>
+    </div>
+    <script src="pong.js"></script>
+</body>
+</htmlx>
