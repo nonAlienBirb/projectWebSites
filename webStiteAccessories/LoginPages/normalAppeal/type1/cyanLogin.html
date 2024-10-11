@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>login page</title>
+    <style>
+        *
+        {
+            margin: 0;
+            padding: 0;
+        }
+        body
+        {
+            display: flex;
+            height: 100vh;
+            background-color: black;
+            color: aliceblue;
+            align-items: center;
+            justify-content: center;
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 16px;
+            letter-spacing: 0.11mm;
+        }
+        .box
+        {
+            display: grid;
+            background-color: #171717ef;
+            padding: 40px;
+            border: solid cyan;
+            border-radius: 7px;
+            height: 320px;
+            width: 300px;
+        }
+        h1,p,.inputs,.links.button
+        {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .texts, .inputs
+        {
+            display: grid;
+ 
+        }
+        div
+        {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        input
+        {
+            font-family:  sans-serif ,Arial, Helvetica;
+            padding: 10px;
+            width: 270px;
+            border: 2px, solid, cyan;
+            border-top: transparent;
+            border-left: transparent;
+            background-color: transparent;
+            color: white;
+            text-shadow: none;
+            transition: 0.6s;
+            
+        }
+        input:focus
+        {
+            background-color: cyan;
+            outline: none;
+            color: #171717ef;
+        }
+
+        .username,.password
+        {
+            margin-bottom: 10px;
+            margin-right: 5px;
+        }
+
+        i{
+            margin-bottom: 10px;
+        }
+        .links
+        {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            margin: 10px;
+            font-size: 16px;
+        }
+        a
+        {
+            color:oldlace;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        a:hover
+        {
+            color: cyan;
+            translate: 0 -12%;
+        }
+        .btn
+        {
+            background-color: aliceblue;
+            color: black;
+            padding: 5px 15px ;
+            border-radius: 10px ;
+            font-size: 16px;
+            margin: 20px;
+            transition: 0.17s;
+            
+        }
+        .btn:hover{
+            background-color: cyan;
+            cursor: pointer;
+            transform: scale(1.1);
+        }
+        
+
+    </style>
+</head>
+<body>
+    <div class="box">
+        <div class="texts">
+            <h1>Login bitch</h1>
+            <p>Lorem ipsum dolor sit amet.</p>
+        </div>
+        <div class="inputs">
+            <div><input type="text" placeholder="username" class="username"><i>O</i></div>
+            <div><input type="text" placeholder="password"  class="password"><i>O</i></div>
+        </div>
+        <div class="links">
+            <a href="#" class="forgot">forget password ?</a>
+            <a href="#" class="create">create account</a>
+        </div>
+        <div></div>
+        <div class="button">
+            <button class="btn">submit</button>
+        </div>
+
+    </div>
+</body>
+</html>
