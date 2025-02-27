@@ -52,8 +52,9 @@ var divB = document.getElementsByClassName('b')[0];
 var p1Height = divP1.offsetHeight;
 var p2Height = divP2.offsetHeight;
 var bHeight = divB.offsetHeight;
+var bWidth = divB.offsetWidth;
 
-var step = 5; // Reduced for smoother movement
+var step = 5;
 var gameIsRunning = false;
 var ballXspeed = 0;
 var ballYspeed = 0;
@@ -71,7 +72,7 @@ function reposPlayers() {
     divP2.style.top = (divScreenHeight - p2Height) / 2 + "px";
     divP2.style.left = divScreenWidth - 40 + "px";
     divB.style.top = (divScreenHeight - bHeight) / 2 + "px";
-    divB.style.left = (divScreenWidth - bHeight) / 2 + "px";
+    divB.style.left = (divScreenWidth - bWidth) / 2 + "px";
 }
 
 var p1MovingUp = false;
@@ -133,8 +134,8 @@ function startGame() {
 function setBallStep() {
     let signX = rand(0, 1) === 0 ? -1 : 1;
     let signY = rand(0, 1) === 0 ? -1 : 1;
-    ballXspeed = 4 * signX; // Fixed speed
-    ballYspeed = 3 * signY; // Fixed speed
+    ballXspeed = 4 * signX;
+    ballYspeed = 3 * signY;
 }
 
 function moveBall() {
@@ -145,15 +146,17 @@ function moveBall() {
         let screenHeight = divScreen.offsetHeight;
 
         // Update ball position
-        divB.style.top = (ballTop + ballYspeed) + 'px';
-        divB.style.left = (ballLeft + ballXspeed) + 'px';
+        ballTop += ballYspeed;
+        ballLeft += ballXspeed;
 
-        // Wall collision
-        if (ballTop <= 0 || ballTop >= screenHeight - bHeight) {
+        // Wall collision (top and bottom)
+        if (ballTop <= bHeight/2 || ballTop >= screenHeight - bHeight/2) {
             ballYspeed *= -1;
+            // Keep ball within bounds
+            ballTop = Math.max(bHeight/2, Math.min(screenHeight - bHeight/2, ballTop));
         }
 
-        // Paddle collision (using element positions relative to screen)
+        // Paddle collision
         let p1Top = parseFloat(divP1.style.top) - p1Height/2;
         let p1Left = parseFloat(divP1.style.left);
         let p2Top = parseFloat(divP2.style.top) - p2Height/2;
@@ -166,7 +169,7 @@ function moveBall() {
             ballXspeed *= -1;
         }
 
-        // Score/reset (only when ball is well past paddles)
+        // Score/reset
         if (ballLeft <= -10 || ballLeft >= screenWidth + 10) {
             gameIsRunning = false;
             ballXspeed = 0;
@@ -174,6 +177,10 @@ function moveBall() {
             reposPlayers();
             return;
         }
+
+        // Apply new position
+        divB.style.top = ballTop + 'px';
+        divB.style.left = ballLeft + 'px';
 
         requestAnimationFrame(moveBall);
     }
