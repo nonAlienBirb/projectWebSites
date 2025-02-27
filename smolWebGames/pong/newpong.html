@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Pong</title>
     <style>
         html, body {
@@ -11,34 +11,50 @@
             height: 100%;
             width: 100%;
             overflow: hidden;
+            touch-action: none; /* Prevents default touch behaviors */
         }
 
         #screen {
             background-color: black;
             position: relative;
-            height: 90%;
+            height: 100%; /* Changed to full height for mobile */
             width: 100%;
         }
 
         .p1, .p2 {
             background-color: #fff;
             position: absolute;
-            width: 10px;
-            height: 10%;
+            width: 15px; /* Wider for touch */
+            height: 15%; /* Larger for touch */
             transform: translate(-50%,-50%);
         }
 
         .b {
             background-color: #fff;
             position: absolute;
-            width: 10px;
-            height: 10px;
+            width: 15px; /* Slightly larger ball */
+            height: 15px;
             transform: translate(-50%,-50%);
         }
+
+        /* Touch zones for mobile */
+        #leftTouch, #rightTouch {
+            position: absolute;
+            width: 50%;
+            height: 100%;
+            top: 0;
+            z-index: 10;
+            opacity: 0;
+        }
+
+        #leftTouch { left: 0; }
+        #rightTouch { right: 0; }
     </style>
 </head>
 <body>
     <div id="screen">
+        <div id="leftTouch"></div>
+        <div id="rightTouch"></div>
         <div class="p1"></div>
         <div class="p2"></div>
         <div class="b"></div>
@@ -48,13 +64,15 @@ var divScreen = document.getElementById("screen");
 var divP1 = document.getElementsByClassName("p1")[0];
 var divP2 = document.getElementsByClassName("p2")[0];
 var divB = document.getElementsByClassName('b')[0];
+var leftTouch = document.getElementById("leftTouch");
+var rightTouch = document.getElementById("rightTouch");
 
 var p1Height = divP1.offsetHeight;
 var p2Height = divP2.offsetHeight;
 var bHeight = divB.offsetHeight;
 var bWidth = divB.offsetWidth;
 
-var step = 5;
+var step = 8; // Slightly faster for mobile
 var gameIsRunning = false;
 var ballXspeed = 0;
 var ballYspeed = 0;
@@ -81,6 +99,7 @@ var p2MovingUp = false;
 var p2MovingDown = false;
 
 function movePlayer() {
+    // Keyboard controls
     document.addEventListener('keydown', function(event) {
         switch (event.code) {
             case 'ArrowUp': p2MovingUp = true; break;
@@ -97,6 +116,48 @@ function movePlayer() {
             case 'KeyW': p1MovingUp = false; break;
             case 'KeyS': p1MovingDown = false; break;
         }
+    });
+
+    // Touch controls
+    let leftTouchStartY = 0;
+    let rightTouchStartY = 0;
+
+    leftTouch.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        leftTouchStartY = e.touches[0].clientY;
+    });
+
+    leftTouch.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        let touchY = e.touches[0].clientY;
+        p1MovingUp = touchY < leftTouchStartY;
+        p1MovingDown = touchY > leftTouchStartY;
+        leftTouchStartY = touchY;
+    });
+
+    leftTouch.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        p1MovingUp = false;
+        p1MovingDown = false;
+    });
+
+    rightTouch.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        rightTouchStartY = e.touches[0].clientY;
+    });
+
+    rightTouch.addEventListener('touchmove', (e) => {
+        e.preventDefault();
+        let touchY = e.touches[0].clientY;
+        p2MovingUp = touchY < rightTouchStartY;
+        p2MovingDown = touchY > rightTouchStartY;
+        rightTouchStartY = touchY;
+    });
+
+    rightTouch.addEventListener('touchend', (e) => {
+        e.preventDefault();
+        p2MovingUp = false;
+        p2MovingDown = false;
     });
 
     function updatePositions(timestamp) {
@@ -116,6 +177,7 @@ function movePlayer() {
 }
 
 function startGame() {
+    // Keyboard start
     document.addEventListener('keypress', function(event) {
         if (event.code === 'Space' && !gameIsRunning) {
             gameIsRunning = true;
@@ -127,6 +189,16 @@ function startGame() {
             ballXspeed = 0;
             ballYspeed = 0;
             reposPlayers();
+        }
+    });
+
+    // Touch start
+    divScreen.addEventListener('touchstart', (e) => {
+        if (!gameIsRunning) {
+            e.preventDefault();
+            gameIsRunning = true;
+            setBallStep();
+            moveBall();
         }
     });
 }
@@ -152,7 +224,6 @@ function moveBall() {
         // Wall collision (top and bottom)
         if (ballTop <= bHeight/2 || ballTop >= screenHeight - bHeight/2) {
             ballYspeed *= -1;
-            // Keep ball within bounds
             ballTop = Math.max(bHeight/2, Math.min(screenHeight - bHeight/2, ballTop));
         }
 
@@ -162,15 +233,15 @@ function moveBall() {
         let p2Top = parseFloat(divP2.style.top) - p2Height/2;
         let p2Left = parseFloat(divP2.style.left);
 
-        if ((ballLeft <= p1Left + 10 && ballLeft >= p1Left - 10 &&
+        if ((ballLeft <= p1Left + 15 && ballLeft >= p1Left - 15 &&
              ballTop >= p1Top && ballTop <= p1Top + p1Height) ||
-            (ballLeft >= p2Left - 10 && ballLeft <= p2Left + 10 &&
+            (ballLeft >= p2Left - 15 && ballLeft <= p2Left + 15 &&
              ballTop >= p2Top && ballTop <= p2Top + p2Height)) {
             ballXspeed *= -1;
         }
 
         // Score/reset
-        if (ballLeft <= -10 || ballLeft >= screenWidth + 10) {
+        if (ballLeft <= -15 || ballLeft >= screenWidth + 15) {
             gameIsRunning = false;
             ballXspeed = 0;
             ballYspeed = 0;
@@ -191,9 +262,15 @@ window.onload = () => {
     movePlayer();
     startGame();
 
-    window.onresize = () => reposPlayers();
+    window.onresize = () => {
+        reposPlayers();
+        p1Height = divP1.offsetHeight;
+        p2Height = divP2.offsetHeight;
+        bHeight = divB.offsetHeight;
+        bWidth = divB.offsetWidth;
+    };
 
-    alert("Welcome to Web Pong!\nControls:\nW/S - Player 1\nUp/Down - Player 2\nSpace - Start\nP - Pause");
+    alert("Welcome to Web Pong!\nDesktop: W/S (P1), Up/Down (P2), Space (start), P (pause)\nMobile: Left side touch (P1), Right side touch (P2), Tap to start");
 };
     </script>
 </body>
