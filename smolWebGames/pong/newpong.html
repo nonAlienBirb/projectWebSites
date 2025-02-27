@@ -26,7 +26,6 @@
             width: 10px;
             height: 10%;
             transform: translate(-50%,-50%);
-            transition: all 0.3s ease;
         }
 
         .b {
@@ -35,7 +34,6 @@
             width: 10px;
             height: 10px;
             transform: translate(-50%,-50%);
-            transition: all 0.3s ease;
         }
     </style>
 </head>
@@ -46,21 +44,16 @@
         <div class="b"></div>
     </div>
     <script>
-var screenheight = window.innerHeight;
-var screenwidth = window.innerWidth;
 var divScreen = document.getElementById("screen");
 var divP1 = document.getElementsByClassName("p1")[0];
 var divP2 = document.getElementsByClassName("p2")[0];
 var divB = document.getElementsByClassName('b')[0];
 
 var p1Height = divP1.offsetHeight;
-var p1Width = divP1.offsetWidth;
 var p2Height = divP2.offsetHeight;
-var p2Width = divP2.offsetWidth;
 var bHeight = divB.offsetHeight;
-var bWidth = divB.offsetWidth;
 
-var step = 10;
+var step = 5; // Reduced for smoother movement
 var gameIsRunning = false;
 var ballXspeed = 0;
 var ballYspeed = 0;
@@ -69,22 +62,16 @@ function rand(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-function map(x, min1, max1, min2, max2) {
-    return ((x - min1) * (max2 - min2) / (max1 - min1)) + min2;
-}
-
-function reposPlayers(w, h) {
+function reposPlayers() {
     var divScreenWidth = divScreen.offsetWidth;
     var divScreenHeight = divScreen.offsetHeight;
 
-    if (!gameIsRunning) {
-        divP1.style.top = (divScreenHeight - p1Height) / 2 + "px";
-        divP1.style.left = 30 + "px";
-        divP2.style.top = (divScreenHeight - p2Height) / 2 + "px";
-        divP2.style.left = divScreenWidth - p2Width - 30 + "px";
-        divB.style.top = (divScreenHeight - bHeight) / 2 + "px";
-        divB.style.left = (divScreenWidth - bWidth) / 2 + "px";
-    }
+    divP1.style.top = (divScreenHeight - p1Height) / 2 + "px";
+    divP1.style.left = 30 + "px";
+    divP2.style.top = (divScreenHeight - p2Height) / 2 + "px";
+    divP2.style.left = divScreenWidth - 40 + "px";
+    divB.style.top = (divScreenHeight - bHeight) / 2 + "px";
+    divB.style.left = (divScreenWidth - bHeight) / 2 + "px";
 }
 
 var p1MovingUp = false;
@@ -111,22 +98,20 @@ function movePlayer() {
         }
     });
 
-    function updatePositions() {
+    function updatePositions(timestamp) {
         const screenHeight = divScreen.offsetHeight;
         
-        // Player 1 movement with bounds
-        let p1Top = parseInt(divP1.style.top);
+        let p1Top = parseFloat(divP1.style.top);
         if (p1MovingUp && p1Top - step >= p1Height/2) divP1.style.top = (p1Top - step) + 'px';
         if (p1MovingDown && p1Top + step <= screenHeight - p1Height/2) divP1.style.top = (p1Top + step) + 'px';
 
-        // Player 2 movement with bounds
-        let p2Top = parseInt(divP2.style.top);
+        let p2Top = parseFloat(divP2.style.top);
         if (p2MovingUp && p2Top - step >= p2Height/2) divP2.style.top = (p2Top - step) + 'px';
         if (p2MovingDown && p2Top + step <= screenHeight - p2Height/2) divP2.style.top = (p2Top + step) + 'px';
 
         requestAnimationFrame(updatePositions);
     }
-    updatePositions();
+    requestAnimationFrame(updatePositions);
 }
 
 function startGame() {
@@ -148,42 +133,46 @@ function startGame() {
 function setBallStep() {
     let signX = rand(0, 1) === 0 ? -1 : 1;
     let signY = rand(0, 1) === 0 ? -1 : 1;
-    ballXspeed = rand(3, 5) * signX;
-    ballYspeed = rand(2, 4) * signY;
+    ballXspeed = 4 * signX; // Fixed speed
+    ballYspeed = 3 * signY; // Fixed speed
 }
 
 function moveBall() {
     if (gameIsRunning) {
-        let ballTop = parseInt(divB.style.top);
-        let ballLeft = parseInt(divB.style.left);
-        
+        let ballTop = parseFloat(divB.style.top);
+        let ballLeft = parseFloat(divB.style.left);
+        let screenWidth = divScreen.offsetWidth;
+        let screenHeight = divScreen.offsetHeight;
+
+        // Update ball position
         divB.style.top = (ballTop + ballYspeed) + 'px';
         divB.style.left = (ballLeft + ballXspeed) + 'px';
 
-        // Vertical bounce
-        if (ballTop <= 0 || ballTop >= divScreen.offsetHeight - bHeight) {
+        // Wall collision
+        if (ballTop <= 0 || ballTop >= screenHeight - bHeight) {
             ballYspeed *= -1;
         }
 
-        // Score/reset
-        if (ballLeft <= 0 || ballLeft >= divScreen.offsetWidth - bWidth) {
+        // Paddle collision (using element positions relative to screen)
+        let p1Top = parseFloat(divP1.style.top) - p1Height/2;
+        let p1Left = parseFloat(divP1.style.left);
+        let p2Top = parseFloat(divP2.style.top) - p2Height/2;
+        let p2Left = parseFloat(divP2.style.left);
+
+        if ((ballLeft <= p1Left + 10 && ballLeft >= p1Left - 10 &&
+             ballTop >= p1Top && ballTop <= p1Top + p1Height) ||
+            (ballLeft >= p2Left - 10 && ballLeft <= p2Left + 10 &&
+             ballTop >= p2Top && ballTop <= p2Top + p2Height)) {
+            ballXspeed *= -1;
+        }
+
+        // Score/reset (only when ball is well past paddles)
+        if (ballLeft <= -10 || ballLeft >= screenWidth + 10) {
             gameIsRunning = false;
             ballXspeed = 0;
             ballYspeed = 0;
             reposPlayers();
             return;
-        }
-
-        // Paddle collision
-        let p1Rect = divP1.getBoundingClientRect();
-        let p2Rect = divP2.getBoundingClientRect();
-        let ballRect = divB.getBoundingClientRect();
-
-        if ((ballRect.left <= p1Rect.right && ballRect.right >= p1Rect.left &&
-             ballRect.top <= p1Rect.bottom && ballRect.bottom >= p1Rect.top) ||
-            (ballRect.left <= p2Rect.right && ballRect.right >= p2Rect.left &&
-             ballRect.top <= p2Rect.bottom && ballRect.bottom >= p2Rect.top)) {
-            ballXspeed *= -1;
         }
 
         requestAnimationFrame(moveBall);
@@ -195,9 +184,7 @@ window.onload = () => {
     movePlayer();
     startGame();
 
-    var w = divScreen.offsetWidth;
-    var h = divScreen.offsetHeight;
-    window.onresize = () => reposPlayers(w, h);
+    window.onresize = () => reposPlayers();
 
     alert("Welcome to Web Pong!\nControls:\nW/S - Player 1\nUp/Down - Player 2\nSpace - Start\nP - Pause");
 };
